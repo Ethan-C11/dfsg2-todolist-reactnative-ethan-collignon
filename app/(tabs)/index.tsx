@@ -1,70 +1,71 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import {ThemedText} from "@/components/ThemedText";
+import {FlatList, StyleSheet, useColorScheme, View} from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useSafeAreaInsets} from "react-native-safe-area-context";
+import styles from "@/components/styles/styles";
+import Task from "@/components/Task";
+import {useCallback, useEffect, useState} from "react";
+import Bouton from "@/components/Bouton";
+import {useFocusEffect} from "@react-navigation/core";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+export default function todolist() {
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+    const insets = useSafeAreaInsets();
+    const colorScheme = useColorScheme();
+    const isDarkMode = colorScheme === 'dark';
+    const [tasksList, setTasksList] = useState<{ id: string, task:string, createdAt: Date }[]>([])
+
+    useFocusEffect(
+        useCallback(()=>{
+            getTasksList();
+        }, [])
+    );
+    const getTasksList = async () => {
+        const tasksListTemp = await AsyncStorage.getItem('tasksList');
+        setTasksList(tasksListTemp ? JSON.parse(tasksListTemp) : []);
+    }
+    const setTaskListInStorage = async () => {
+        AsyncStorage.setItem(
+            'tasksList',
+            JSON.stringify(tasksList)
+        )
+    }
+
+    const handleDeleteAll = async () => {
+        setTasksList([]);
+        await AsyncStorage.removeItem('tasksList');
+    }
+
+    const handleDelete = (indexToDelete: number) => {
+        setTasksList(tasksList.toSpliced(indexToDelete, 1));
+    }
+
+    const placeholder = () => {
+        if(tasksList.length == 0)
+            return <ThemedText style={styles.todolistplaceholder}>Vous n'avez encore aucune tâche</ThemedText>
+    }
+
+    useEffect(() => {
+        setTaskListInStorage()
+    }, [tasksList]);
+
+    return (
+        <View style={[isDarkMode ? styles.container : styles.lightContainer, {
+            marginTop: insets.top,
+            marginBottom: insets.bottom,
+            marginLeft: insets.left,
+            marginRight: insets.right
+        }]}>
+            <ThemedText style={styles.title}>Todo List</ThemedText>
+            {placeholder()}
+            <FlatList
+                data={tasksList}
+                renderItem={
+                    ({item}) => <Task task={item.task} createdAt={item.createdAt} id={item.id} tasksList={tasksList} handleDelete={handleDelete} />
+                }
+            />
+            <Bouton text="Tout supprimer" icon="trash-outline" type="danger" onClick={handleDeleteAll}></Bouton>
+        </View>
+    )
 }
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
