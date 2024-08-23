@@ -74,6 +74,9 @@ const styles = StyleSheet.create({
     },
     blackText:{
         color: '#000'
+    }, footerText: {
+        color: '#b6b7b8',
+        fontSize: 10
     }
 });
 

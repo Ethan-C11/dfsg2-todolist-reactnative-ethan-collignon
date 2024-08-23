@@ -30,6 +30,12 @@ export default function TabLayout() {
                 tabBarIcon: ({ color, focused }) => (
                     <TabBarIcon name={focused ? 'add-outline' : 'add-outline'} color={color} />
                 ),
+                href: {
+                    pathname:'/(tabs)/newItem',
+                    params: {
+                        idToEdit: undefined,
+                    }
+                }
             }}
         />
     </Tabs>

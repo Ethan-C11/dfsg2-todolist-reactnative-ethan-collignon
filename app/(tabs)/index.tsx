@@ -7,16 +7,17 @@ import Task from "@/components/Task";
 import {useCallback, useEffect, useState} from "react";
 import Bouton from "@/components/Bouton";
 import {useFocusEffect} from "@react-navigation/core";
+import {NavigationContainer} from "@react-navigation/native";
 
 export default function todolist() {
 
     const insets = useSafeAreaInsets();
     const colorScheme = useColorScheme();
     const isDarkMode = colorScheme === 'dark';
-    const [tasksList, setTasksList] = useState<{ id: string, task:string, createdAt: Date }[]>([])
+    const [tasksList, setTasksList] = useState<{ id: string, task: string, createdAt: Date }[]>([])
 
     useFocusEffect(
-        useCallback(()=>{
+        useCallback(() => {
             getTasksList();
         }, [])
     );
@@ -41,7 +42,7 @@ export default function todolist() {
     }
 
     const placeholder = () => {
-        if(tasksList.length == 0)
+        if (tasksList.length == 0)
             return <ThemedText style={styles.todolistplaceholder}>Vous n'avez encore aucune tâche</ThemedText>
     }
 
@@ -50,22 +51,27 @@ export default function todolist() {
     }, [tasksList]);
 
     return (
-        <View style={[isDarkMode ? styles.container : styles.lightContainer, {
-            marginTop: insets.top,
-            marginBottom: insets.bottom,
-            marginLeft: insets.left,
-            marginRight: insets.right
-        }]}>
-            <ThemedText style={styles.title}>Todo List</ThemedText>
-            {placeholder()}
-            <FlatList
-                data={tasksList}
-                renderItem={
-                    ({item}) => <Task task={item.task} createdAt={item.createdAt} id={item.id} tasksList={tasksList} handleDelete={handleDelete} />
-                }
-            />
-            <Bouton text="Tout supprimer" icon="trash-outline" type="danger" onClick={handleDeleteAll}></Bouton>
-        </View>
+            <View style={[isDarkMode ? styles.container : styles.lightContainer, {
+                marginTop: insets.top,
+                marginBottom: insets.bottom,
+                marginLeft: insets.left,
+                marginRight: insets.right
+            }]}>
+                <ThemedText style={styles.title}>Todo List</ThemedText>
+                {placeholder()}
+                <FlatList
+                    data={tasksList}
+                    renderItem={
+                        ({item}) => <Task task={item.task}
+                                          createdAt={item.createdAt}
+                                          id={item.id}
+                                          tasksList={tasksList}
+                                          handleDelete={handleDelete}
+                        />
+                    }
+                />
+                <Bouton text="Tout supprimer" icon="trash-outline" type="danger" onClick={handleDeleteAll}></Bouton>
+            </View>
     )
 }
 
